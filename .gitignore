@@ -24,3 +24,10 @@ trading-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# ElixirLS
+.elixir_ls/
+.elixir-tools/
+
+# macOS
+.DS_Store
