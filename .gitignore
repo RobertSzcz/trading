@@ -31,3 +31,6 @@ trading-*.tar
 
 # macOS
 .DS_Store
+
+# Escript executable:
+trading

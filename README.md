@@ -1,21 +1,21 @@
 # Trading
 
-**TODO: Add description**
+## Requirements
+Erlang and Elixir versions are listed in .tool-versions file
 
-## Installation
+## Setup
+Run `mix escript.build` to build project
+Now you can use exacutable `trading` that accepts transactions list and `fifo` `hifo` policies
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `trading` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:trading, "~> 0.1.0"}
-  ]
-end
+Examples:
+```
+$ echo -e '2021-01-01,buy,10000.00,1.00000000\n2021-02-01,sell,20000.00,0.50000000' | ./trading fifo
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/trading>.
+```
+$ echo -e '2021-01-01,buy,10000.00,1.00000000\n2021-01-02,buy,20000.00,1.00000000\n2021-02-01,sell,20000.00,1.50000000' | ./trading fifo
+```
 
+```
+$ echo -e '2021-01-01,buy,10000.00,1.00000000\n2021-01-02,buy,20000.00,1.00000000\n2021-02-01,sell,20000.00,1.50000000' | ./trading hifo
+```
