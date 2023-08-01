@@ -34,3 +34,6 @@ trading-*.tar
 
 # Escript executable:
 trading
+
+# Task description
+task.txt
