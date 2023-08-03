@@ -85,6 +85,7 @@ defmodule Trading.Policies.HIFO do
         do_insert_sorted(more_expensive_lots ++ [h], tail, lot_to_insert)
 
       # If lots have same price we will sell oldest first
+      # leaving that code for transparency even though we could use >= instead
       price == lot_to_insert_price ->
         do_insert_sorted(more_expensive_lots ++ [h], tail, lot_to_insert)
 

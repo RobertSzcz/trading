@@ -35,7 +35,7 @@ defmodule Trading.Policies.FIFO do
   defp handle_buy([], date, price, quantity), do: {:ok, [{1, date, price, quantity}]}
 
   defp handle_buy(state, date, price, quantity) do
-    # Both reading and adding have O(n) time complexity here
+    # Both reading and adding have O(n) local time complexity here
     {last_id, last_date, _last_price, _last_quantity} = Enum.at(state, -1)
 
     # :lt cannot happens since transaction are ordered

@@ -7,14 +7,14 @@ defmodule Trading.Policies.Shared do
       total_price = Enum.reduce(lots, 0, fn {_id, _d, p, q}, acc -> acc + p * q end)
       avg_price = total_price / total_quantity
 
-      # Didn't have time to think if there are any implications of doing that here
+      # This should be decided with business if we want to round up or round down
       avg_price = trunc(avg_price)
-      [id, date, avg_price, total_quantity]
+      {id, date, avg_price, total_quantity}
     end)
   end
 
   def sell([], quantity_left) when quantity_left > 0, do: {[], quantity_left}
-  def sell(remaining_lots, quantity_left) when quantity_left == 0, do: {remaining_lots, 0}
+  def sell(lots, quantity_left) when quantity_left == 0, do: {lots, 0}
 
   def sell([{lot_id, lot_date, lot_price, lot_quantity} | tail], quantity_left) do
     remaining_quantity = lot_quantity - quantity_left
