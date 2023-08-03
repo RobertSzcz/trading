@@ -1,23 +1,24 @@
 defmodule Trading.CLI do
   @new_line_separators ["\r\n", "\r", "\n"]
 
-  def main(args) do
-    [policy_module] = parse_args(args)
-    {:ok, state} = policy_module.new_state()
+  alias Trading.Transactions
 
-    handle_transactions(state, policy_module)
+  def main(args) do
+    [transaction_policy] = parse_args(args)
+    {:ok, state} = Transactions.new_state()
+
+    handle_transactions(state, transaction_policy)
   end
 
-  defp handle_transactions(state, policy_module, line_number \\ 0) do
+  defp handle_transactions(state, transaction_policy, line_number \\ 0) do
     line = IO.read(:stdio, :line)
 
     case line do
       :eof ->
-        results = state |> policy_module.summarize_state() |> IO.inspect()
-
-        results
+        state
+        |> Transactions.summarize_state()
         |> Enum.each(fn [id, date, avg_price, total_quantity] ->
-          {:ok, line} =
+          {:ok, id, date, avg_price, total_quantity} =
             Trading.TransactionLogProcessing.generate_output_line(
               id,
               date,
@@ -25,7 +26,9 @@ defmodule Trading.CLI do
               total_quantity
             )
 
-          log(Enum.join(line, ","))
+          line_string = Enum.join([id, date, avg_price, total_quantity], ",")
+
+          log(line_string)
         end)
 
         System.halt(0)
@@ -40,7 +43,7 @@ defmodule Trading.CLI do
         state =
           process_transaction(
             state,
-            policy_module,
+            transaction_policy,
             date,
             transaction_type,
             price,
@@ -48,20 +51,27 @@ defmodule Trading.CLI do
             line_number
           )
 
-        handle_transactions(state, policy_module, line_number + 1)
+        handle_transactions(state, transaction_policy, line_number + 1)
     end
   end
 
   defp process_transaction(
          state,
-         policy_module,
+         transaction_policy,
          date,
          transaction_type,
          price,
          quantity,
          line_number
        ) do
-    case policy_module.process_transaction(state, date, transaction_type, price, quantity) do
+    case Transactions.process_transaction(
+           state,
+           transaction_policy,
+           date,
+           transaction_type,
+           price,
+           quantity
+         ) do
       {:ok, state} ->
         state
 
@@ -93,8 +103,8 @@ defmodule Trading.CLI do
   end
 
   # No need to use Option Parser for that simple case
-  defp parse_args(["fifo"]), do: [Trading.TransactionPolicies.Fifo]
-  defp parse_args(["hifo"]), do: [Trading.TransactionPolicies.Hifo]
+  defp parse_args(["fifo"]), do: [:fifo]
+  defp parse_args(["hifo"]), do: [:hifo]
 
   defp parse_args([policy]) do
     log("Error: Unsupported policy #{policy}. Requires 'hifo' or 'fifo' policy as argument.")

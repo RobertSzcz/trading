@@ -9,16 +9,16 @@ defmodule Trading.TransactionLogProcessing do
   end
 
   def generate_output_line(id, date, price, quantity) do
-    {:ok,
-     [
-       generate_id_string(id),
-       generate_date_string(date),
-       generate_price_string(price),
-       generate_quantity_string(quantity)
-     ]}
+    {:ok, generate_id_string(id), generate_date_string(date), generate_price_string(price),
+     generate_quantity_string(quantity)}
   end
 
-  defp parse_date(date), do: Date.from_iso8601(date)
+  defp parse_date(date) do
+    case Date.from_iso8601(date) do
+      {:ok, date} -> {:ok, date}
+      {:error, _} -> {:error, :invalid_date}
+    end
+  end
 
   defp parse_transaction_type("buy"), do: {:ok, :buy}
   defp parse_transaction_type("sell"), do: {:ok, :sell}
@@ -28,8 +28,10 @@ defmodule Trading.TransactionLogProcessing do
     with [integer_part_string, <<decimal_part_string::binary-size(2)>>] <-
            String.split(price_string, "."),
          {integer_part, ""} <- Integer.parse(integer_part_string),
-         {decimal_part, ""} <- Integer.parse(decimal_part_string) do
-      {:ok, integer_part * 100 + decimal_part}
+         {decimal_part, ""} <- Integer.parse(decimal_part_string),
+         price <- integer_part * 100 + decimal_part,
+         true <- price > 0 do
+      {:ok, price}
     else
       _ -> {:error, :invalid_price}
     end
@@ -39,8 +41,10 @@ defmodule Trading.TransactionLogProcessing do
     with [integer_part_string, <<decimal_part_string::binary-size(8)>>] <-
            String.split(quantity_string, "."),
          {integer_part, ""} <- Integer.parse(integer_part_string),
-         {decimal_part, ""} <- Integer.parse(decimal_part_string) do
-      {:ok, integer_part * 100_000_000 + decimal_part}
+         {decimal_part, ""} <- Integer.parse(decimal_part_string),
+         quantity <- integer_part * 100_000_000 + decimal_part,
+         true <- quantity > 0 do
+      {:ok, quantity}
     else
       _ -> {:error, :invalid_quantity}
     end
