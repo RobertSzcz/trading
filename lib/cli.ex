@@ -5,7 +5,7 @@ defmodule Trading.CLI do
 
   def main(args) do
     [transaction_policy] = parse_args(args)
-    {:ok, state} = Transactions.new_state()
+    {:ok, state} = Transactions.new_state(transaction_policy)
 
     handle_transactions(state, transaction_policy)
   end
@@ -16,7 +16,7 @@ defmodule Trading.CLI do
     case line do
       :eof ->
         state
-        |> Transactions.summarize_state()
+        |> Transactions.summarize_state(transaction_policy)
         |> Enum.each(fn [id, date, avg_price, total_quantity] ->
           {:ok, id, date, avg_price, total_quantity} =
             Trading.TransactionLogProcessing.generate_output_line(

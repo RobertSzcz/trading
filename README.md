@@ -22,3 +22,4 @@ $ echo -e '2021-01-01,buy,10000.00,1.00000000\n2021-01-02,buy,20000.00,1.0000000
 
 ## Notes:
 - task was implemented assuming `an ordered transaction log`
+- For production code I would put more effort into creating types (e.g. lot type {id, date, price, quantity})

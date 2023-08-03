@@ -1,7 +1,7 @@
-defmodule Trading.TransactionsIntegrationTest do
+defmodule Trading.Policies.FIFOIntegrationTest do
   use ExUnit.Case
 
-  @subject Trading.Transactions
+  @subject Trading.Policies.FIFO
 
   # Since its recruitment task I am adding test cases that were in task description
   describe "behavioural tests from business usecases" do
@@ -10,8 +10,8 @@ defmodule Trading.TransactionsIntegrationTest do
       transaction2 = [Date.from_iso8601!("2021-01-01"), :sell, 2_000_000, 50_000_000]
 
       {:ok, state} = @subject.new_state()
-      {:ok, state} = run_transaction(state, :fifo, transaction1)
-      {:ok, state} = run_transaction(state, :fifo, transaction2)
+      {:ok, state} = run_transaction(state, transaction1)
+      {:ok, state} = run_transaction(state, transaction2)
 
       expected_state = [
         {1, Date.from_iso8601!("2021-01-01"), 1_000_000, 50_000_000}
@@ -26,9 +26,9 @@ defmodule Trading.TransactionsIntegrationTest do
       transaction3 = [Date.from_iso8601!("2021-02-01"), :sell, 2_000_000, 150_000_000]
 
       {:ok, state} = @subject.new_state()
-      {:ok, state} = run_transaction(state, :fifo, transaction1)
-      {:ok, state} = run_transaction(state, :fifo, transaction2)
-      {:ok, state} = run_transaction(state, :fifo, transaction3)
+      {:ok, state} = run_transaction(state, transaction1)
+      {:ok, state} = run_transaction(state, transaction2)
+      {:ok, state} = run_transaction(state, transaction3)
 
       expected_state = [
         {2, Date.from_iso8601!("2021-01-02"), 2_000_000, 50_000_000}
@@ -43,9 +43,9 @@ defmodule Trading.TransactionsIntegrationTest do
     transaction2 = [Date.from_iso8601!("2021-01-01"), :sell, 1_000_000, 100_000_000]
 
     {:ok, state} = @subject.new_state()
-    {:ok, state} = run_transaction(state, :fifo, transaction1)
+    {:ok, state} = run_transaction(state, transaction1)
 
-    assert {:error, :no_available_lots_to_sell} = run_transaction(state, :fifo, transaction2)
+    assert {:error, :no_available_lots_to_sell} = run_transaction(state, transaction2)
   end
 
   test "should not allow sell as first transaction" do
@@ -53,8 +53,29 @@ defmodule Trading.TransactionsIntegrationTest do
 
     {:ok, state} = @subject.new_state()
 
-    assert {:error, :no_available_lots_to_sell} = run_transaction(state, :fifo, transaction)
+    assert {:error, :no_available_lots_to_sell} = run_transaction(state, transaction)
   end
+
+  # I would leave that for production code
+  # test "should not allow unordered buy transaction" do
+  #   transaction1 = [Date.from_iso8601!("2021-01-02"), :buy, 1_000_000, 50_000_000]
+  #   transaction2 = [Date.from_iso8601!("2021-01-01"), :buy, 1_000_000, 50_000_000]
+
+  #   {:ok, state} = @subject.new_state()
+  #   {:ok, state} = run_transaction(state, transaction1)
+
+  #   assert {:error, :transaction_out_of_order} = run_transaction(state, transaction2)
+  # end
+
+  # test "should not allow unordered sell transaction" do
+  #   transaction1 = [Date.from_iso8601!("2021-01-02"), :buy, 1_000_000, 50_000_000]
+  #   transaction2 = [Date.from_iso8601!("2021-01-01"), :sell, 1_000_000, 50_000_000]
+
+  #   {:ok, state} = @subject.new_state()
+  #   {:ok, state} = run_transaction(state, transaction1)
+
+  #   assert {:error, :transaction_out_of_order} = run_transaction(state, transaction2)
+  # end
 
   test "should support partial lot sale from different days" do
     transaction1 = [Date.from_iso8601!("2021-01-01"), :buy, 1_000_000, 50_000_000]
@@ -65,12 +86,12 @@ defmodule Trading.TransactionsIntegrationTest do
     transaction6 = [Date.from_iso8601!("2021-01-04"), :sell, 5_000_000, 125_000_000]
 
     {:ok, state} = @subject.new_state()
-    {:ok, state} = run_transaction(state, :fifo, transaction1)
-    {:ok, state} = run_transaction(state, :fifo, transaction2)
-    {:ok, state} = run_transaction(state, :fifo, transaction3)
-    {:ok, state} = run_transaction(state, :fifo, transaction4)
-    {:ok, state} = run_transaction(state, :fifo, transaction5)
-    {:ok, state} = run_transaction(state, :fifo, transaction6)
+    {:ok, state} = run_transaction(state, transaction1)
+    {:ok, state} = run_transaction(state, transaction2)
+    {:ok, state} = run_transaction(state, transaction3)
+    {:ok, state} = run_transaction(state, transaction4)
+    {:ok, state} = run_transaction(state, transaction5)
+    {:ok, state} = run_transaction(state, transaction6)
 
     expected_state = [
       {2, Date.from_iso8601!("2021-01-02"), 3_000_000, 25_000_000},
@@ -81,7 +102,7 @@ defmodule Trading.TransactionsIntegrationTest do
     assert state == expected_state
   end
 
-  defp run_transaction(state, policy, [date, operation, price, quantity]) do
-    @subject.process_transaction(state, policy, date, operation, price, quantity)
+  defp run_transaction(state, [date, operation, price, quantity]) do
+    @subject.process_transaction(state, date, operation, price, quantity)
   end
 end
