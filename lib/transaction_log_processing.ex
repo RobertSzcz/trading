@@ -24,6 +24,7 @@ defmodule Trading.TransactionLogProcessing do
   defp parse_transaction_type("sell"), do: {:ok, :sell}
   defp parse_transaction_type(_), do: {:error, :invalid_transaction_type}
 
+  # This could be merged with parse_quantity, but I value readability more.
   defp parse_price(price_string) do
     with [integer_part_string, <<decimal_part_string::binary-size(2)>>] <-
            String.split(price_string, "."),
@@ -53,6 +54,7 @@ defmodule Trading.TransactionLogProcessing do
   defp generate_id_string(id), do: Integer.to_string(id)
   defp generate_date_string(date), do: Date.to_iso8601(date)
 
+  # This could be merged with generate_quantity_string, but I value readability more.
   defp generate_price_string(price) do
     {integer_part, decimal_part} =
       price

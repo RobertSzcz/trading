@@ -4,7 +4,7 @@
 Erlang and Elixir versions are listed in .tool-versions file
 
 ## Setup
-Run `mix escript.build` to build project
+Run `mix escript.build` to build project.
 Now you can use exacutable `trading` that accepts transactions list and `fifo` `hifo` policies
 
 Examples:

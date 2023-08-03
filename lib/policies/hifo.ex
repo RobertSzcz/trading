@@ -31,12 +31,7 @@ defmodule Trading.Policies.HIFO do
 
   def process_transaction(state, _date, :sell, _price, quantity), do: handle_sell(state, quantity)
 
-  defp handle_buy(
-         %__MODULE__{current_id: nil},
-         date,
-         price,
-         quantity
-       ) do
+  defp handle_buy(%__MODULE__{current_id: nil}, date, price, quantity) do
     {:ok,
      %__MODULE__{
        current_date: date,

@@ -2,7 +2,7 @@ defmodule Trading.CLI do
   @moduledoc """
   This is main CLI module.
   I am skipping integration tests of that due to limited time for task.
-  In order to test that we could use mock for IO.read(:stdio, :line) function
+  In order to test that we could use mock for IO.read(:stdio, :line) function.
   """
   @new_line_separators ["\r\n", "\r", "\n"]
 
