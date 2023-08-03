@@ -66,6 +66,7 @@ defmodule Trading.Policies.HIFO do
     end
   end
 
+  # Here we could do [lot_to_insert | lots] and use Enum.sort_by if we value code readability more
   defp insert_sorted(lots, lot_to_insert) do
     do_insert_sorted([], lots, lot_to_insert)
   end
