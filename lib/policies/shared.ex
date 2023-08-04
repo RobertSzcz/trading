@@ -5,16 +5,6 @@ defmodule Trading.Policies.Shared do
     |> Enum.map(&aggregate_lots_daily/1)
   end
 
-  defp aggregate_lots_daily({id, [{_id, date, _price, _quantity} | _] = lots}) do
-    total_quantity = lots |> Enum.map(&elem(&1, 3)) |> Enum.sum()
-    total_price = Enum.reduce(lots, 0, fn {_id, _d, p, q}, acc -> acc + p * q end)
-    avg_price = total_price / total_quantity
-
-    # This should be decided with business if we want to round up or round down
-    avg_price = trunc(avg_price)
-    build_lot(id, date, avg_price, total_quantity)
-  end
-
   def sell([], quantity_left) when quantity_left > 0, do: {[], quantity_left}
   def sell(lots, quantity_left) when quantity_left == 0, do: {lots, 0}
 
@@ -31,6 +21,16 @@ defmodule Trading.Policies.Shared do
       remaining_quantity < 0 ->
         sell(tail, quantity_left - lot_quantity)
     end
+  end
+
+  defp aggregate_lots_daily({id, [{_id, date, _price, _quantity} | _] = lots}) do
+    total_quantity = lots |> Enum.map(&elem(&1, 3)) |> Enum.sum()
+    total_price = Enum.reduce(lots, 0, fn {_id, _d, p, q}, acc -> acc + p * q end)
+    avg_price = total_price / total_quantity
+
+    # This should be decided with business if we want to round up or round down
+    avg_price = trunc(avg_price)
+    build_lot(id, date, avg_price, total_quantity)
   end
 
   defp build_lot(id, date, price, quantity), do: {id, date, price, quantity}
