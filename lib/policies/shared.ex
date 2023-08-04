@@ -2,10 +2,10 @@ defmodule Trading.Policies.Shared do
   def summarize_lots(lots) do
     lots
     |> Enum.group_by(&elem(&1, 0))
-    |> Enum.map(&aggregate_lots/1)
+    |> Enum.map(&aggregate_lots_daily/1)
   end
 
-  defp aggregate_lots({id, [{_id, date, _price, _quantity} | _] = lots}) do
+  defp aggregate_lots_daily({id, [{_id, date, _price, _quantity} | _] = lots}) do
     total_quantity = lots |> Enum.map(&elem(&1, 3)) |> Enum.sum()
     total_price = Enum.reduce(lots, 0, fn {_id, _d, p, q}, acc -> acc + p * q end)
     avg_price = total_price / total_quantity
