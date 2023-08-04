@@ -61,32 +61,9 @@ defmodule Trading.Policies.HIFO do
     end
   end
 
-  # Here we could do [lot_to_insert | lots] and use Enum.sort_by if we value code readability more
-  defp insert_sorted(lots, lot_to_insert) do
-    do_insert_sorted([], lots, lot_to_insert)
-  end
-
-  # in case of same lots from different days have same price we take the first
-  defp do_insert_sorted(more_expensive_lots, [], lot_to_insert),
-    do: more_expensive_lots ++ [lot_to_insert]
-
-  defp do_insert_sorted(
-         more_expensive_lots,
-         [{_id, _date, price, _quantity} = h | tail],
-         {_, _, lot_to_insert_price, _} = lot_to_insert
-       ) do
-    cond do
-      price > lot_to_insert_price ->
-        do_insert_sorted(more_expensive_lots ++ [h], tail, lot_to_insert)
-
-      # If lots have same price we will sell oldest first
-      # leaving that code for transparency even though we could use >= instead
-      price == lot_to_insert_price ->
-        do_insert_sorted(more_expensive_lots ++ [h], tail, lot_to_insert)
-
-      price < lot_to_insert_price ->
-        more_expensive_lots ++ [lot_to_insert] ++ [h] ++ tail
-    end
+  defp insert_sorted(lots, {_, _, lot_to_insert_price, _} = lot_to_insert) do
+    index = Enum.find_index(lots, fn {_, _, price, _} -> price < lot_to_insert_price end) || -1
+    List.insert_at(lots, index, lot_to_insert)
   end
 
   # since we track only remaining lots we can ignore date and price
