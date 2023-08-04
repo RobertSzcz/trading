@@ -2,15 +2,17 @@ defmodule Trading.Policies.Shared do
   def summarize_lots(lots) do
     lots
     |> Enum.group_by(&elem(&1, 0))
-    |> Enum.map(fn {id, [{_id, date, _price, _quantity} | _] = lots} ->
-      total_quantity = lots |> Enum.map(&elem(&1, 3)) |> Enum.sum()
-      total_price = Enum.reduce(lots, 0, fn {_id, _d, p, q}, acc -> acc + p * q end)
-      avg_price = total_price / total_quantity
+    |> Enum.map(&aggregate_lots/1)
+  end
 
-      # This should be decided with business if we want to round up or round down
-      avg_price = trunc(avg_price)
-      {id, date, avg_price, total_quantity}
-    end)
+  defp aggregate_lots({id, [{_id, date, _price, _quantity} | _] = lots}) do
+    total_quantity = lots |> Enum.map(&elem(&1, 3)) |> Enum.sum()
+    total_price = Enum.reduce(lots, 0, fn {_id, _d, p, q}, acc -> acc + p * q end)
+    avg_price = total_price / total_quantity
+
+    # This should be decided with business if we want to round up or round down
+    avg_price = trunc(avg_price)
+    build_lot(id, date, avg_price, total_quantity)
   end
 
   def sell([], quantity_left) when quantity_left > 0, do: {[], quantity_left}
