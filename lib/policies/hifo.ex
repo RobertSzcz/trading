@@ -49,10 +49,12 @@ defmodule Trading.Policies.HIFO do
     # :lt cannot happens since transaction are ordered
     case Date.compare(date, last_date) do
       :gt ->
-        current_id = last_id + 1
-        state = Map.put(state, :current_id, current_id)
-        state = Map.put(state, :current_date, date)
-        state = Map.update!(state, :lots, &insert_sorted(&1, {current_id, date, price, quantity}))
+        state =
+          state
+          |> Map.put(:current_id, last_id + 1)
+          |> Map.put(:current_date, date)
+          |> Map.update!(:lots, &insert_sorted(&1, {last_id + 1, date, price, quantity}))
+
         {:ok, state}
 
       :eq ->
@@ -62,6 +64,7 @@ defmodule Trading.Policies.HIFO do
   end
 
   defp insert_sorted(lots, {_, _, lot_to_insert_price, _} = lot_to_insert) do
+    # If lots have same price we will sell oldest first. If we want newest we can do =<
     index = Enum.find_index(lots, fn {_, _, price, _} -> price < lot_to_insert_price end) || -1
     List.insert_at(lots, index, lot_to_insert)
   end
